@@ -1,92 +1,59 @@
-# Fireblocks Staking SDK
+## Fireblocks Staking SDK
 
+### About
+This repository contains a Javascript \ Typescript implementation of Fireblocks Staking SDK.
+Currently supported Blockchains as part of this SDK:
+- MATIC - https://polygon.technology/
 
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.com/fireblocks-solutions-engineerinig/fireblocks-staking-sdk.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.com/fireblocks-solutions-engineerinig/fireblocks-staking-sdk/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
 
 ## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+### Prerequisites
+- Credentials for Fireblocks API Services. Otherwise, please contact Fireblocks support for further instructions on how to obtain your API credentials.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+### CLI Usage
+For ease of use we provide a CLI client that can be used with the same functionality as the SDK itself.<br>
+The work done by the CLI is the same as done by creating and running stakers manually.<br>
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+#### Storing data
+You can use a .ENV file to store some of the below values to make initializing the client a quicker process;
+| Variable Name            | What it is used for                                            | Type of input or available values                    |
+|--------------------------|----------------------------------------------------------------|------------------------------------------------------|
+| STAKING_API_FILE_PATH    | The path to the API Key file that is used to sign API Requests | Absolute path (/path/to/file/...) in the file system |
+| STAKING_API_UUID         | The API Key, can be obtained from the console                  | UUID                                                 |
+| STAKING_TARGET_CHAIN     | The chain on which the staking should be performed             | One of (case sensetive): MATIC         |
+| STAKING_VAULT_ACCOUNT_ID | The vault account Id from which the staking will occur         | A non-negative integer                               |
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+#### Using the CLI
+To run the CLI run the following command from the location of the CLI:<br>
+`npx ts-node CLI.ts`
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+And then simply follow the on-screen instructions.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+### Staker usage
+Each staker contains the same fundimental functionality with several functions that are callable, note each staker implementation might have slightly different implementation on this base template.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+Constructor:<br>
+Each Staker has the same base constructor, but can expand on it:
+- fbks            - The FireblocksSDK instance to use.
+- vaultAccountId  - The ID of the vault account to use.
+- assetId         - Dictated by the staker (not part of instantiation by the user).
+- web3            - A web3 instance for the blockchain if needed.
 
-## License
-For open source projects, say how it is licensed.
+Core Functions:
+1. stake(number)        - stake the given amount.
+2. restake()            - restake the accomulated rewards.
+3. unstake(number)      - unstake the given amount.
+4. withdraw(number)     - withdraw the specified amount (if applicable). 
+5. claimRewards()       - claims all accumulated rewards (if applicable).
+6. getBalances(bool)    - returns the balances you have staked in the blockchain (bool determines if it's the smallest denominator).
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Misc Functions:
+1. setup()              - Validates user input and collects needed information for the staker to work properly. This should be run right after instantiating the staker.
+2. runSetupIfNeeded()   - Runs the setup function if needed (each staker has different criteria to when to run the setup function).
+
+Misc Capabilities:
+1. This SDK contains logging functionality which will print information to the screen which can be helpful with understanding what's happening, or other important information. This can be turned off using:
+
+    `Staker.logging = false;`
+
+Each staker will have its own documentation elaborating its usage in the examples folder.

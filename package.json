@@ -1,0 +1,24 @@
+{
+  "name": "fireblocks-staking-sdk",
+  "version": "1.0.0",
+  "description": "Fireblocks JS Staking SDK",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc && npm run tslint",
+    "tslint": "tslint -c tslint.json -p tsconfig.json --fix",
+    "prepare": "npm run build"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "bs58": "^5.0.0",
+    "dotenv": "^16.0.1",
+    "fireblocks-sdk": "^2.3.1",
+    "js-sha256": "^0.9.0",
+    "near-api-js": "^0.45.1",
+    "readline": "^1.3.0",
+    "ts-node": "^10.8.2",
+    "web3": "^1.7.4",
+    "web3-eth-contract": "^1.7.4",
+    "web3-utils": "^1.7.4"
+  }
+}
