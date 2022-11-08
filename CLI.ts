@@ -4,7 +4,7 @@ import { resolve } from 'path';
 import * as readline from 'readline';
 import { inspect } from 'util';
 import Web3 from 'web3';
-import { MATICStaker, Staker } from './src/Staking';
+import { Constants, MATICStaker, NEARStaker, Staker } from './src/Staking';
 import * as dotenv from 'dotenv';
 
 const yesNoResponses = ["y", "yes", "Y", "n", "no", "N"];
@@ -36,7 +36,7 @@ interface StakerConstructionArguments {
 }
 
 async function banner(){
-    console.clear();
+    //console.clear();
     console.log(
         "=================================================\n" +
         "======= Fireblocks Staking SDK CLI Client =======\n" +
@@ -114,10 +114,12 @@ async function intro(rl: readline.Interface): Promise<StakerConstructionArgument
     if(!process.env.STAKING_TARGET_CHAIN)
         console.log(
             "Please select the relevant blockchain:\n" +
-            "1) MATIC\n" 
+            "1) MATIC\n" +
+            "2) NEAR\n"
+
         );
 
-    let stakerTypes = ["MATIC", "1"];
+    let stakerTypes = ["MATIC", "NEAR", "1", "2"];
     let stakerType = await getAndValidateInput(
         rl,
         "Please insert he number or name of your staker.",
@@ -164,17 +166,35 @@ async function intro(rl: readline.Interface): Promise<StakerConstructionArgument
  */
 async function buildStaker(stakerType: string, fbks: FireblocksSDK, vaultAccountId: number, rl: readline.Interface): Promise<PreparedStaker> {
 
-    let staker: MATICStaker;
+    let staker: MATICStaker | NEARStaker;
     let validatorId: number;
 
-    validatorId = await getAndValidateInput(
-        rl,
-        'Please provide the validator\'s Id',
-        '[ERR] Validator Id is invalid, please try again.',
-        (x: string | number) => x > 0,
-        true
-    );  
-    staker = new MATICStaker(fbks, vaultAccountId, validatorId);
+    if (["1", "MATIC"].includes(stakerType)) {
+        validatorId = await getAndValidateInput(
+            rl,
+            'Please provide the validator\'s Id',
+            '[ERR] Validator Id is invalid, please try again.',
+            (x: string | number) => x > 0,
+            true
+        );
+
+        staker = new MATICStaker(fbks, vaultAccountId, validatorId);
+    } else {
+        let testnet: string = await getAndValidateInput(
+            rl,
+            "Do you want to use testnet? [y/N]",
+            "[ERR] Invalid input, please try again.",
+            (x: string | number) => yesNoResponses.includes(x as string),
+            false
+        );
+        let useTestnet = yesResponses.includes(testnet);
+        let address = await question(rl, "Which address do you want to use? Leave blank for Figment.");
+        if (address !== ""){
+            staker = new NEARStaker(fbks, vaultAccountId, address, useTestnet);
+        } else {
+            staker = new NEARStaker(fbks, vaultAccountId, Constants.NEAR.FIGMENT_CONTRACT_ADDRESS, useTestnet);
+        }
+    }
 
     console.log('Running staker setup.');
     await staker.setup();
@@ -191,7 +211,7 @@ async function buildStaker(stakerType: string, fbks: FireblocksSDK, vaultAccount
 
 }
 
-function buildFuncDescriptors(staker: MATICStaker): FuncDescriptor[] {
+function buildFuncDescriptors(staker: MATICStaker | NEARStaker): FuncDescriptor[] {
 
     let funcDescriptors: FuncDescriptor[] = [];
 
@@ -204,35 +224,41 @@ function buildFuncDescriptors(staker: MATICStaker): FuncDescriptor[] {
             (x: string | number) => x > 0,
             true
         );
-        let amountToApprove: number = await getAndValidateInput(
-            rl,
-            'Please provide the amount you would like to approve for transfer, -1 for the same amount as staked.',
-            '[ERR] Invalid amount to approve, please try again.',
-            (x: string | number) => (x as number) === -1 || (x as number) >= 0,
-            true
-        );
 
-        let shouldSkipApprove: string = await getAndValidateInput(
-            rl,
-            'Please specify if you want to skip the approve call.',
-            '[ERR] Invalid seletion, please try again.',
-            (x: string | number) => ["y", "yes", "Y", "n", "no", "N"].includes(x as string),
-            false
-        );
+        if (staker instanceof MATICStaker) {
+            let amountToApprove: number = await getAndValidateInput(
+                rl,
+                'Please provide the amount you would like to approve for transfer, -1 for the same amount as staked.',
+                '[ERR] Invalid amount to approve, please try again.',
+                (x: string | number) => (x as number) === -1 || (x as number) >= 0,
+                true
+            );
 
-        let shouldSkipBuyVoucher: string = await getAndValidateInput(
-            rl,
-            'Please specify if you want to skip the buyVoucher call (the actual staking call).',
-            '[ERR] Invalid seletion, please try again.',
-            (x: string | number) => ["y", "yes", "Y", "n", "no", "N"].includes(x as string),
-            false
-        );
+            let shouldSkipApprove: string = await getAndValidateInput(
+                rl,
+                'Please specify if you want to skip the approve call.',
+                '[ERR] Invalid seletion, please try again.',
+                (x: string | number) => ["y", "yes", "Y", "n", "no", "N"].includes(x as string),
+                false
+            );
+
+            let shouldSkipBuyVoucher: string = await getAndValidateInput(
+                rl,
+                'Please specify if you want to skip the buyVoucher call (the actual staking call).',
+                '[ERR] Invalid seletion, please try again.',
+                (x: string | number) => ["y", "yes", "Y", "n", "no", "N"].includes(x as string),
+                false
+            );
+
+            return new Promise((resolve) => {
+                resolve([amountToStake, amountToApprove, yesResponses.includes(shouldSkipApprove), yesResponses.includes(shouldSkipBuyVoucher)]);
+            })
+        }
 
         return new Promise((resolve) => {
-            resolve([amountToStake, amountToApprove, yesResponses.includes(shouldSkipApprove), yesResponses.includes(shouldSkipBuyVoucher)]);
-        })
+            resolve([amountToStake]);
+        });
     }
-
     const emptyArgsFunc: ArgumentFetcherFunction = async (staker: Staker, rl: readline.Interface) => {
         return new Promise((resolve) => {
             resolve([])
@@ -260,21 +286,30 @@ function buildFuncDescriptors(staker: MATICStaker): FuncDescriptor[] {
             true
         );
 
-        let burnStakeAmount = await getAndValidateInput(
-            rl,
-            'Please provide minimal amount of shares to burn (recommended to set to -1 for the same amount as the unstake amount).',
-            '[ERR] Invalid amount, please try again.',
-            (x: string | number) => x > 0 || x === -1,
-            true
-        );
+        if (staker instanceof MATICStaker) {
+            let burnStakeAmount = await getAndValidateInput(
+                rl,
+                'Please provide minimal amount of shares to burn (recommended to set to -1 for the same amount as the unstake amount).',
+                '[ERR] Invalid amount, please try again.',
+                (x: string | number) => x > 0 || x === -1,
+                true
+            );
+
+            return new Promise((resolve) => {
+                resolve([unstakeAmount, burnStakeAmount]);
+            });
+        }
 
         return new Promise((resolve) => {
-            resolve([unstakeAmount, burnStakeAmount]);
+            resolve([unstakeAmount]);
         });
     }
     const withdrawArgsFunc: ArgumentFetcherFunction = async (staker: Staker, rl: readline.Interface) => {
-        let query = "Please provide the nonce to withdraw.";
-        let errMessage = "[ERR] Invalid nonce, please try again.";
+        let query = (staker instanceof MATICStaker) ? "Please provide the nonce to withdraw." :
+                "Please provide the amount to withdraw.";
+
+        let errMessage = (staker instanceof MATICStaker) ? "[ERR] Invalid nonce, please try again." :
+                "[ERR] Invalid amount to withdraw, please try again.";
 
         let amountToWithdraw: number = await getAndValidateInput(
             rl,
@@ -291,15 +326,24 @@ function buildFuncDescriptors(staker: MATICStaker): FuncDescriptor[] {
 
     // Build the display functions for functions that are supposed to display data.
     const getBalancesDisplayFunc: DisplayFunction = (staker: Staker, values: any[]) => {
-        if (!values || values.length < 3) {
-            console.log('[ERR] Invalid response from getBalances, must be at least 3 results.');
-            return;
+        if (!values || values.length !== 3) {
+            if(!(staker instanceof NEARStaker && values.length == 1)){
+                console.log(`[ERR] Invalid response from getBalances, must be at least 3 results (or 1 in case of NEAR Staker) - ${values.length} - ${staker instanceof NEARStaker}`);
+                return;
+            }
         }
-        let res: any = {
-            'Total': values[0],
-            'Staked': values[1],
-            'Rewards': values[2]
-        };
+        let res:any;
+        if (staker instanceof NEARStaker){
+            res = {
+                'Total': values[0],
+            };
+        } else {
+            res = {
+                'Total': values[0],
+                'Staked': values[1],
+                'Rewards': values[2]
+            };
+        }
 
         console.log(inspect(res, false, null, true));
     }
@@ -357,30 +401,35 @@ function buildFuncDescriptors(staker: MATICStaker): FuncDescriptor[] {
         claimRewards
     );
 
-    const canClaimStakesDisplayFunc: DisplayFunction = async (staker: Staker, values: any[]) => {
-        if (!values) {
-            console.log('[ERR] Invalid resolve from canClaimStakes.');
-            return;
+    // Build class specific function descriptors.
+    if (staker instanceof MATICStaker) {
+
+        const canClaimStakesDisplayFunc: DisplayFunction = async (staker: Staker, values: any[]) => {
+            if (!values) {
+                console.log('[ERR] Invalid resolve from canClaimStakes.');
+                return;
+            }
+
+            if (values.length === 0) {
+                console.log('No stake nonces available for claiming.');
+                return;
+            }
+
+            console.log(`The following nonces are available to be claimed: ${values.join(',')}.`);
         }
 
-        if (values.length === 0) {
-            console.log('No stake nonces available for claiming.');
-            return;
-        }
+        let canClaimStakes: FuncDescriptor = {
+            displayName: "Nonce available to claim",
+            internalFunc: (staker as MATICStaker).canWithdrawStakes,
+            isDisplay: true,
+            argFunc: emptyArgsFunc,
+            displayFunc: canClaimStakesDisplayFunc
+        };
 
-        console.log(`The following nonces are available to be claimed: ${values.join(',')}.`);
+        funcDescriptors.push(canClaimStakes);
+
     }
 
-    let canClaimStakes: FuncDescriptor = {
-        displayName: "Nonce available to claim",
-        internalFunc: (staker as MATICStaker).canWithdrawStakes,
-        isDisplay: true,
-        argFunc: emptyArgsFunc,
-        displayFunc: canClaimStakesDisplayFunc
-    };
-
-    funcDescriptors.push(canClaimStakes);
-    
     let mainMenu: FuncDescriptor = {
         displayName: "Back to main menu",
         internalFunc: function(){},
@@ -403,7 +452,7 @@ function buildFuncDescriptors(staker: MATICStaker): FuncDescriptor[] {
  * @param isNum is the return value a number or a string.
  * @returns A number or a string that is valid input.
  */
-async function getAndValidateInput(rl: readline.Interface, query: string, errMessage: string, validatorFunc: (x: string | number) => boolean, isNum: boolean, envName: string | undefined = undefined): Promise<any> {
+ async function getAndValidateInput(rl: readline.Interface, query: string, errMessage: string, validatorFunc: (x: string | number) => boolean, isNum: boolean, envName: string | undefined = undefined): Promise<any> {
     let answer: string = ( envName === undefined || process.env[envName as string] as string === undefined ) ? await question(rl, query) : process.env[envName as string] as string;
     let answerNum: number;
 

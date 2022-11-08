@@ -1,6 +1,7 @@
 import { FireblocksSDK, TransactionStatus } from "fireblocks-sdk";
 import { AbiItem } from "web3-utils";
 import { Staker } from "./Staker";
+import { inspect } from 'util';
 
 export class Constants {
 
@@ -125,12 +126,45 @@ export class Constants {
         public static readonly WITHDRAW_REWARDS_ABI: AbiItem = { "constant": false, "inputs": [], "name": "withdrawRewards", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" };
     }
 
+    static NEAR = class {
+
+        /**
+         * The configuration for NEAR, this is incomplete and will completed at runtime (missing signer attribute).
+         */
+        public static readonly NEAR_CONFIG = {
+            networkId: "mainnet",
+            nodeUrl: "https://rpc.mainnet.near.org",
+            walletUrl: "https://wallet.mainnet.near.org",
+            helperUrl: "https://helper.mainnet.near.org",
+            explorerUrl: "https://explorer.mainnet.near.org",
+            headers: {}
+        };
+
+        /**
+         * Testnet configuration.
+         */
+        public static readonly NEAR_TESTNET_CONFIG = {
+            networkId: "testnet",
+            nodeUrl: "https://rpc.testnet.near.org",
+            walletUrl: "https://wallet.testnet.near.org",
+            helperUrl: "https://helper.testnet.near.org",
+            explorerUrl: "https://explorer.testnet.near.org",
+            headers: {}
+        };
+
+        /**
+         * The address of Figment's staking contract.
+         */
+        public static FIGMENT_CONTRACT_ADDRESS = 'figment.poolv1.near';
+
+
+    }
 }
 
 export async function waitForTx(fbks: FireblocksSDK, txId: string, staker: Staker) {
     let tx = await fbks.getTransactionById(txId);
     while (tx.status !== TransactionStatus.COMPLETED) {
-        staker.log(`Waiting for transaction to finish - ${translateSubStatus(tx.subStatus)}`, 'LOG');
+        staker.log(`Waiting for transaction to finish - ${translateStatus(tx.status)}`, 'LOG');
         await new Promise(resolve => setTimeout(resolve, 10000)); // 10 Second delay.
         tx = await fbks.getTransactionById(txId);
 
@@ -217,6 +251,27 @@ function translateSubStatus(subStatus: string){
     }
 
     return statusToDescriptionMap[subStatus];
+}
+
+function translateStatus(status: string){
+    const statusToDescriptionMap: Record<string, string> = {
+        "SUBMITTED": "The transaction was submitted to the Fireblocks system and is being processed",
+        "QUEUED": "Transaction is queued. Pending for another transaction to be processed",
+        "PENDING_AUTHORIZATION": "The transaction is pending authorization by other users (as defined in the Transaction Authorization Policy)",
+        "PENDING_SIGNATURE": "The transaction is pending the initiator to sign the transaction",
+        "BROADCASTING": "The transaction is pending broadcast to the blockchain network",
+        "PENDING_3RD_PARTY_MANUAL_APPROVAL": "The transaction is pending manual approval as required by the 3rd party, usually an email approval",
+        "PENDING_3RD_PARTY": "The transaction is pending approval by the 3rd party service (e.g exchange)",
+        "CONFIRMING": "Pending confirmation on the blockchain",
+        "PARTIALLY_COMPLETED": "(Only for Aggregated transactions) One or more of of the transaction records have completed successfully",
+        "PENDING_AML_SCREENING": "In case the AML screening feature is enabled, transaction is pending AML screening result",
+        "COMPLETED": "Successfully completed",
+        "CANCELLED": "The transaction was cancelled or rejected by the user on the Fireblocks platform or by the 3rd party service from which the funds are withdrawn",
+        "REJECTED": "The transaction was rejected by the Fireblocks system or by the 3rd party service",
+        "BLOCKED": "The transaction was blocked due to a policy rule",
+        "FAILED": "The transaction has failed"
+      }
+    return statusToDescriptionMap[status];
 }
 
 export function typecheck(v: any, type: string) {
