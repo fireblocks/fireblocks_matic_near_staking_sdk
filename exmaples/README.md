@@ -4,6 +4,7 @@ This folder contains examples for usage of stakers for the different supported b
 | Blockchain | Location | Testnet Supported |
 |------------|----------|-------------------|
 | MATIC      | [link](./MATIC/)     | No                |
+| NEAR      | [link](./NEAR/)     | Yes                |
 
 
 ## Customer Staker
