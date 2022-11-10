@@ -4,6 +4,7 @@
 This repository contains a Javascript \ Typescript implementation of Fireblocks Staking SDK.
 Currently supported Blockchains as part of this SDK:
 - MATIC - https://polygon.technology/
+- NEAR - https://near.org/
 
 
 ## Usage
