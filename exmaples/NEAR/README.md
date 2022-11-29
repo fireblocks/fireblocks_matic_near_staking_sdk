@@ -5,8 +5,6 @@ To be able to stake with NEAR the following is required:
     1. NEAR base asset to cover transactions and storage fees.
 2. TAP (Transaction Authorization Policy) Rules (can be united):
     1. A rule to allow raw signing for the NEAR (or the NEAR test) asset, see [this](https://support.fireblocks.io/hc/en-us/articles/4413379762450-Off-chain-message-signing) help center article for more information about Raw Signing TAP rules.
-3. Whitelisted Address:
-    1. Your validator contract address - The address with which you will be running the staking contract calls.
 
 
 ### General Information
