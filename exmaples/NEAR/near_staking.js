@@ -11,9 +11,9 @@ async function defaultContractUsageExample() {
     let staker = new NEARStaker(fbks, 0);
     await staker.setup();
 
-    const amountToStake = 1;
+    const amountToStake = 3;
     const amountToUnstake = 2;
-    const amountToWithdraw = 3;
+    const amountToWithdraw = 1;
 
     // Stake some NEAR
     await staker.stake(amountToStake);
