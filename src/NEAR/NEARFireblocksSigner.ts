@@ -12,6 +12,8 @@ export default class NEARFireblocksSigner extends Signer {
 
     private publicKey: PublicKey | undefined;
 
+    private note: string;
+
     constructor(private fbks: FireblocksSDK, private vaultAccountId: number, private staker: Staker, private assetId: string) {
         super();
     }
@@ -50,6 +52,7 @@ export default class NEARFireblocksSigner extends Signer {
                 id: "" + this.vaultAccountId
             },
             operation: TransactionOperation.RAW,
+            note: this.note,
             extraParameters: {
                 rawMessageData: {
                     messages:   [
@@ -77,5 +80,7 @@ export default class NEARFireblocksSigner extends Signer {
         });
     }
 
-
+    setNote(note: string){
+        this.note = note;
+    }
 }

@@ -36,7 +36,7 @@ interface StakerConstructionArguments {
 }
 
 async function banner(){
-    //console.clear();
+    console.clear();
     console.log(
         "=================================================\n" +
         "======= Fireblocks Staking SDK CLI Client =======\n" +
@@ -282,7 +282,7 @@ function buildFuncDescriptors(staker: MATICStaker | NEARStaker): FuncDescriptor[
             rl,
             'Please provide amount to unstake (-1 to unstake all available staked tokens).',
             '[ERR] Invalid amount to unstake, please try again.',
-            (x: string | number) => x > 0,
+            (x: string | number) => (x > 0 || x == -1),
             true
         );
 

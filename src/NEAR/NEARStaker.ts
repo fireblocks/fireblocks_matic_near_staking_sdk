@@ -5,7 +5,6 @@ import Web3 from "web3";
 import NEARFireblocksSigner from "./NEARFireblocksSigner";
 import { Staker } from "../Staker";
 import { Constants, typecheck } from "../Utils";
-import {inspect} from 'util';
 
 export class NEARStaker extends Staker {
 
@@ -53,8 +52,6 @@ export class NEARStaker extends Staker {
                 changeMethods: ['deposit_and_stake', 'stake', 'unstake_all', 'unstake', 'withdraw_all', 'withdraw'],
             }
         );
-        console.log(inspect(this.contract, false,null,true))
-
     }
 
     async runSetupIfNeeded() {
@@ -76,6 +73,8 @@ export class NEARStaker extends Staker {
 
         this.log('Validated.');
         this.log('Note - stake,unstake and withdraw will print data including reciepts for transaction, make sure to save it for future reference.', 'WRN');
+
+        (this.config.signer as NEARFireblocksSigner).setNote(`NEAR Staking - Staking ${amount} NEAR`);
 
         // @ts-ignore - required because deposit_and_stake is generated at runtime.
         let response = await this.contract.deposit_and_stake({
@@ -121,6 +120,8 @@ export class NEARStaker extends Staker {
         }
 
         this.log('Note - stake,unstake and withdraw will print data including reciepts for transaction, make sure to save it for future reference.', 'WRN');
+        
+        (this.config.signer as NEARFireblocksSigner).setNote(`NEAR Staking - Unstaking ${amount == -1 ? 'All' : amount} NEAR`);
 
         if (Number.parseFloat(stakedNear) === amount || amount === -1) {
             this.log('Unstaking all staked amount.');
@@ -145,6 +146,8 @@ export class NEARStaker extends Staker {
         typecheck(amount, typeof 1);
         this.log('It is not possible to calculate the reward value thus withdraw will attempt to run with the specified amount, if said amount is larger than the total NEAR in the validator, the NEAR node will fail the request.', 'WRN');
 
+        (this.config.signer as NEARFireblocksSigner).setNote(`NEAR Staking - Withdrawring ${amount == -1 ? 'All' : amount} NEAR from rewards`);
+
         if (amount === -1) {
             // @ts-ignore
             await this.contract.withdraw_all({});
@@ -156,7 +159,7 @@ export class NEARStaker extends Staker {
     }
 
     async claimRewards(): Promise<void> {
-        
+        throw new Error("Claiming rewards is not a feature in NEAR.");
     }
 
 }
