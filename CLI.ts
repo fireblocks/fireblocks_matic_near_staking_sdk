@@ -134,19 +134,11 @@ async function intro(rl: readline.Interface): Promise<StakerConstructionArgument
     console.log('Validating inputs...');
     const fbks = new FireblocksSDK(readFileSync(resolve(apiPrivateKeyPath), "utf8"), apiKey);
 
-    let accounts: VaultAccountResponse[];
-    try {
-        accounts = await fbks.getVaultAccounts();
-    } catch {
-        let pagedResponse = await fbks.getVaultAccountsWithPageInfo({ limit: 500 });
-        accounts = pagedResponse.accounts;
-    }
-
     let vaultAccountId: number = await getAndValidateInput(
         rl,
         "Please insert the vault account Id to use.",
         '[ERR] Invalid vault account id, please try again.',
-        (x: string | number) => (x as number) >= 0 && (x as number) < accounts.length,
+        (x: string | number) => (x as number) >= 0,
         true,
         "STAKING_VAULT_ACCOUNT_ID"
     );
