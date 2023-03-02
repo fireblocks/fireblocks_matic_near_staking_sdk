@@ -247,7 +247,7 @@ export class MATICStaker extends Staker {
                 this.log('Requested to unstake more than currently staked.', 'ERR');
                 return;
             }
-            amountToUnstake = numberToHex(amount);
+            amountToUnstake = numberToHex(toWei(`${amount}`));
         }
 
         let callData = [amountToUnstake, sharesToBurn === -1 ? amountToUnstake : numberToHex(toWei("" + sharesToBurn))];
