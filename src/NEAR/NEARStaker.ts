@@ -92,7 +92,7 @@ export class NEARStaker extends Staker {
     async getBalances(smallestDenom: boolean = true): Promise<number[]> {
         await this.runSetupIfNeeded();
         typecheck(smallestDenom, typeof true);
-        // @ts-ignore - required because deposit_and_stake is generated at runtime.
+        // @ts-ignore - required because get_account_staked_balance is generated at runtime.
         let balance = await this.contract.get_account_staked_balance({ account_id: this.account.accountId });
         if(smallestDenom){
             balance = Number.parseFloat(balance);
@@ -111,7 +111,7 @@ export class NEARStaker extends Staker {
     async unstake(amount: number): Promise<void> {
         await this.runSetupIfNeeded();
         typecheck(amount, typeof 1);
-        // @ts-ignore - required because deposit_and_stake is generated at runtime.
+        // @ts-ignore - required because get_account_staked_balance is generated at runtime.
         let balance = await this.contract.get_account_staked_balance({ account_id: this.account.accountId });
         let stakedNear = formatNearAmount(balance);
 
@@ -125,13 +125,13 @@ export class NEARStaker extends Staker {
 
         if (Number.parseFloat(stakedNear) === amount || amount === -1) {
             this.log('Unstaking all staked amount.');
-            // @ts-ignore
+            // @ts-ignore - required because unstake_all is generated at runtime.
             this.contract.unstake_all({});
             return;
         }
 
         this.log(`Unstaking ${amount}.`);
-        // @ts-ignore
+        // @ts-ignore - required because unstake is generated at runtime.
         this.contract.unstake({ args: { amount: parseNearAmount("" + amount) } });
 
         this.log('Withdraw only possible 2 days after unstake happens!');
@@ -149,12 +149,12 @@ export class NEARStaker extends Staker {
         (this.config.signer as NEARFireblocksSigner).setNote(`NEAR Staking - Withdrawring ${amount == -1 ? 'All' : amount} NEAR from rewards`);
 
         if (amount === -1) {
-            // @ts-ignore
+            // @ts-ignore - required because withdraw_all is generated at runtime.
             await this.contract.withdraw_all({});
             return;
         }
 
-        // @ts-ignore
+        // @ts-ignore - required because withdraw is generated at runtime.
         await this.contract.withdraw({ args: { amount: parseNearAmount("" + amount) } });
     }
 
